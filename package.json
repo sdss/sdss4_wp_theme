@@ -1,0 +1,35 @@
+{
+  "name": "sdss4",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Wordpress theme for sdss4.org",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "convertless": "less2scss -s less/ -d scss/",
+    "dev": "node index-dev.js",
+    "prod": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sdss/sdss4_org_wp_theme.git"
+  },
+  "keywords": [
+    "sdss"
+  ],
+  "author": "Jordan Raddick",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/sdss/sdss4_org_wp_theme/issues"
+  },
+  "homepage": "https://github.com/sdss/sdss4_org_wp_theme#readme",
+  "devDependencies": {
+    "sass": "^1.54.4"
+  },
+  "dependencies": {
+    "less2scss": "^1.9.0"
+  }
+}
