@@ -1,0 +1,152 @@
+(function ($) {
+	'use strict';
+
+	var vacz = function () {
+	}
+
+	vacz.prototype.init = function( context ){
+
+		var toggle_container = $('#vac-toggles')[0];
+
+		// Set window to resize article heights with window. Fire now.
+		$(window).on( "resize" , { selector: '.vac-article' } , vacz.normalizeHeightsEvent ).resize();
+
+		// Do not submit form
+		$( toggle_container ).on( "submit" , "form#vacform" , vacz.prevent_default );
+		
+		// Add delegated Key Up event handler to update search results on page
+		$( toggle_container ).on( "keyup" , "#vacsearch" , vacz.do_search );
+		
+		//Add delegated click event handler to checkboxes
+		$( toggle_container ).on( "click" , ".vaccheckbox" , vacz.toggle );
+		
+		// Set Up Search and Toggles
+		var cas_vals = vacz.unique('.vac-cas');
+		var survey_vals = vacz.unique('.vac-survey');
+		var dr_vals = vacz.unique('.vac-dr');
+		var object_vals = vacz.unique('.vac-object');
+		toggle_container.innerHTML +=
+			'<form id="vacform">' +
+			'<div class="row">' +
+			'<div class="col-xs-12">' +
+			this.get_search( 'Search' ) +
+			'</div>' +
+			'<div class="col-xs-12 ">' +
+			this.get_toggles( 'CAS' , 'vaccas' , cas_vals ) +
+			'</div>' +
+			'<div class="col-xs-12 ">' +
+			this.get_toggles( 'Data Release' , 'vacdr' , dr_vals ) +
+			'</div>' +
+			'<div class="col-xs-12 ">' +
+			this.get_toggles( 'Object' , 'vacobject' , object_vals ) +
+			'</div>' +
+			'<div class="col-xs-12 ">' +
+			this.get_toggles( 'Survey' , 'vacsurvey' , survey_vals ) +
+			'</div>' +
+			'</div>' +
+			'</form>';
+	}
+		
+	vacz.prototype.toggle = function( e ){
+
+		// VALIDATE INPUT
+		// If *all* CAS options are checked, uncheck them.
+		if ( $('.vaccheckbox.vacobject').length === $('.vaccheckbox.vacobject:checked').length ) {
+			$('.vaccheckbox.vacobject:checked').prop('checked',false);
+		}
+		if ( $('.vaccheckbox.vaccas').length === $('.vaccheckbox.vaccas:checked').length ) {
+			$('.vaccheckbox.vaccas:checked').prop('checked',false);
+		}
+		if ( $('.vaccheckbox.vacdr').length === $('.vaccheckbox.vacdr:checked').length ) {
+			$('.vaccheckbox.vacdr:checked').prop('checked',false);
+		}
+		if ( $('.vaccheckbox.vacsurvey').length === $('.vaccheckbox.vacsurvey:checked').length ) {
+			$('.vaccheckbox.vacsurvey:checked').prop('checked',false);
+		}
+		
+		// IS THERE ANYTHING TO DO?
+		if ($('.vaccheckbox:checked').length === 0) {
+			console.log('nothing checked, showing all');
+			$('article.vac.type-vac').removeClass('hidden');
+			return;
+		}
+
+		// WE GOT LEGIT BOXES CHECKED. Hide everything and then show what we want to show.
+		$('article.vac.type-vac').addClass('hidden');
+		console.log('something checked, hiding all');
+
+		// Show checked options
+		['cas','dr','survey','object'].forEach( function( el ){
+			if ( $('.vaccheckbox.vac' + el + ':checked').length > 0 ) {
+				$('.vaccheckbox.vac' + el + ':checked').each( function(){
+					var thisid=this.id;
+					console.log('now showing for option ' . thisid );
+					$('article.vac.type-vac .vac-tag.vac-' + el).filter( function(){
+						console.log('now showing for option ' . thisid );
+						return this.innerHTML === $('label[for="' + thisid + '"]' ).text();
+					}).parents('article.vac.type-vac').removeClass('hidden');
+				});
+			}
+		});
+		
+		// Hide unchecked options
+		['cas','dr','survey','object'].forEach( function( el ){
+			if ( $('.vaccheckbox.vac' + el + ':checked').length > 0 ) {
+				$('.vaccheckbox.vac' + el + ':not(:checked)').each( function(){
+					var thisid=this.id;
+					$('article.vac.type-vac .vac-tag.vac-' + el ).filter( function(){
+						return this.innerHTML === $('label[for="' + thisid + '"]' ).text();
+					}).parents('article.vac.type-vac').addClass('hidden');
+				});
+			}
+		});
+	}
+		
+	vacz.prototype.normalizeHeightsEvent = function( event ){
+		vacz.normalizeHeights( event.data.selector );
+	}
+		
+	vacz.prototype.normalizeHeights = function( selector ){
+		$( selector ).height('initial');
+		var maxH=0;
+		$( selector ).each( function(){
+			maxH = maxH > $(this).height() ? maxH : $(this).height() ;
+		});
+		$( selector ).height( maxH ) ;
+	}
+			
+	vacz.prototype.prevent_default = function( e ){
+		e.preventDefault();
+	}
+
+	vacz.prototype.do_search = function( e ){
+		if( e.keyCode === 13 ) { e.preventDefault(); }
+		if( e.keyCode === 13 ) { e.stopPropagation(); }
+		$(".vac-article").addClass("hidden");
+		$(".vac-article:contains('" + e.currentTarget.value + "')").removeClass("hidden");
+	}
+		
+	vacz.prototype.get_search = function( heading ){
+		var thisHTML = '<input type="text" id="vacsearch" name="vacsearch">';
+		return "<div class='form-group form-group-vacsearch'><label class='h4' for='vacsearch'>" + heading + " <small>(Case sensitive)</small></label><br>" + thisHTML + "</div>";
+	}
+		
+	vacz.prototype.get_toggles = function( heading , slug , values ){
+		var i=1;
+		var thisHTML='';
+		$(values).each( function () {
+			thisHTML += '<input type="checkbox" class="vaccheckbox ' + slug + '" id="' + slug + i + '" name="' + slug + i + '" > <label for="' + slug + (i++) + '" >' + this + '</label><br>';
+		});
+		return "<h3 class='h4'>" + heading + "</h3><div class='form-group form-group-" + slug + "'>" + thisHTML + "</div>";
+	}
+		
+	vacz.prototype.unique = function( context ){
+		var arr=[];
+		$(context).each(function(){
+			if (arr.indexOf($(this).text())<0) {
+				arr.push($(this).text());
+			}
+		});
+		return arr;
+	}
+})(jQuery);
