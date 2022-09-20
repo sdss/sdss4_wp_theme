@@ -448,6 +448,15 @@ function sdss_toc_inject( $attr = array() ){
 	$injection .= '<div id="toc"' . $datastr . ">";
 	$injection .= '</div></div></div>';
 
+//	$injection = "<h1><font color='orange'>";
+//	foreach ( $data as $key=>$value ) {
+//		$injection .= $key.": ".$value."<br />";
+//	}
+//	//$injection .= print_r($data['selectors']);
+//	$injection .= "</font></h1>";
+//	$injection .= "<h1><font color='purple'>";
+//	$injection .= $datastr;
+//	$injection .= "</font></h1>";
 	return $injection;
 	
 } 
